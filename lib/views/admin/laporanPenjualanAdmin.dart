@@ -3,11 +3,6 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:intl/intl.dart';
 import 'package:proyek2/controllers/laporanPenjualanController.dart';
 import 'package:proyek2/models/laporanPenjualanModel.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:flutter/foundation.dart';  // For kIsWeb
-import 'package:html/html.dart' as html; // For creating a download link
-import 'package:printing/printing.dart'; // Importing the printing package
 
 class LaporanPenjualanAdmin extends StatefulWidget {
   const LaporanPenjualanAdmin({Key? key}) : super(key: key);
@@ -65,84 +60,61 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
     });
   }
 
-  // Show month selection dialog
-  void _showMonthDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        int selectedMonth = DateTime.now().month;
-        return AlertDialog(
-          title: Text('Pilih Bulan'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: List.generate(12, (index) {
-                return ListTile(
-                  title: Text(DateFormat('MMMM').format(DateTime(0, index + 1))),
-                  onTap: () {
-                    selectedMonth = index + 1;
-                    Navigator.pop(context);
-                    _generatePDF(selectedMonth); // Trigger PDF generation
-                  },
-                );
-              }),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // Generate PDF report for selected month
-  void _generatePDF(int month) async {
-    final pdf = pw.Document();
-
-    // Filter reports by month
-    List<LaporanPenjualan> filteredReports = _laporanList.where((laporan) {
-      DateTime orderDate = DateFormat('yyyy-MM-dd').parse(laporan.tglOrder);
-      return orderDate.month == month;
-    }).toList();
-
-    // Add content to the PDF
-    pdf.addPage(pw.Page(
-      build: (pw.Context context) {
-        return pw.Column(
-          children: [
-            pw.Text('Laporan Penjualan Bulan: ${DateFormat('MMMM yyyy').format(DateTime(0, month))}'),
-            pw.SizedBox(height: 20),
-            pw.Table.fromTextArray(
-              context: context,
-              data: <List<String>>[
-                ['No', 'Nama', 'Tanggal Order', 'Total Harga'],
-                ...filteredReports.map((laporan) {
-                  return [
-                    laporan.idPesan.toString(),
-                    laporan.nama,
-                    laporan.tglOrder,
-                    NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ').format(laporan.totalHarga),
-                  ];
+  // Function to show the order details
+  void _showDetailPesanan(int idPesan) async {
+    try {
+      final detailPesanan =
+          await _laporanController.fetchDetailPesanan(idPesan);
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Detail Pesanan'),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: detailPesanan.map((detail) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Menu: ${detail.namaMenu}'),
+                      Text('Jumlah: ${detail.jumlah}'),
+                      Text(
+                        'Harga: ${NumberFormat.currency(
+                          locale: 'id_ID',
+                          symbol: 'Rp ',
+                          decimalDigits: 2,
+                        ).format(detail.harga)}',
+                      ),
+                      Text(
+                        'Total Harga: ${NumberFormat.currency(
+                          locale: 'id_ID',
+                          symbol: 'Rp ',
+                          decimalDigits: 2,
+                        ).format(detail.totalHarga)}',
+                      ),
+                      Divider(),
+                    ],
+                  );
                 }).toList(),
-              ],
+              ),
             ),
-          ],
-        );
-      },
-    ));
-
-    // Convert PDF to bytes
-    final pdfBytes = await pdf.save();
-
-    // For Web, use HTML package to trigger download
-    if (kIsWeb) {
-      final blob = html.Blob([Uint8List.fromList(pdfBytes)]);
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..target = 'blank'
-        ..download = 'laporan_penjualan.pdf'
-        ..click();
-      html.Url.revokeObjectUrl(url);
-    } else {
-      // For mobile, use Printing.layoutPdf to save or print
-      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdfBytes);
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Tutup'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching detail pesanan: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat detail pesanan: $e')),
+      );
     }
   }
 
@@ -193,55 +165,54 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
                           ),
                         )
                       : DataTable2(
-                          headingRowColor: MaterialStateProperty.all(Colors.purple[400]),
-                          columnSpacing: 16.0,
-                          minWidth: 700,
-                          columns: const [
-                            DataColumn(label: Text('No', style: TextStyle(color: Colors.white))),
-                            DataColumn(label: Text('Nama', style: TextStyle(color: Colors.white))),
-                            DataColumn(label: Text('Tanggal Order', style: TextStyle(color: Colors.white))),
-                            DataColumn(label: Text('Total Harga', style: TextStyle(color: Colors.white))),
-                          ],
-                          rows: _filteredLaporanList.asMap().map((index, laporan) {
-                            return MapEntry(
-                              index,
-                              DataRow(
-                                color: MaterialStateProperty.all(Colors.purple[800]),
-                                cells: [
-                                  DataCell(Text(
-                                    (index + 1).toString(), 
+                        headingRowColor: MaterialStateProperty.all(Colors.purple[400]),
+                        columnSpacing: 16.0,
+                        minWidth: 700,
+                        columns: const [
+                          DataColumn(label: Text('No', style: TextStyle(color: Colors.white))), // Ganti menjadi No
+                          DataColumn(label: Text('Nama', style: TextStyle(color: Colors.white))),
+                          DataColumn(label: Text('Tanggal Order', style: TextStyle(color: Colors.white))),
+                          DataColumn(label: Text('Total Harga', style: TextStyle(color: Colors.white))),
+                        ],
+                        rows: _filteredLaporanList.asMap().map((index, laporan) {
+                          return MapEntry(
+                            index,
+                            DataRow(
+                              color: MaterialStateProperty.all(Colors.purple[800]),
+                              cells: [
+                                DataCell(Text(
+                                  (index + 1).toString(), // Gunakan indeks untuk nomor urut
+                                  style: TextStyle(color: Colors.white),
+                                )),
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      Text(laporan.nama, style: TextStyle(color: Colors.white)),
+                                      IconButton(
+                                        icon: Icon(Icons.info, color: Colors.blue),
+                                        onPressed: () {
+                                          _showDetailPesanan(laporan.idPesan);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                DataCell(Text(laporan.tglOrder, style: TextStyle(color: Colors.white))),
+                                DataCell(
+                                  Text(
+                                    NumberFormat.currency(
+                                      locale: 'id_ID',
+                                      symbol: 'Rp ',
+                                      decimalDigits: 2,
+                                    ).format(laporan.totalHarga),
                                     style: TextStyle(color: Colors.white),
-                                  )),
-                                  DataCell(
-                                    Row(
-                                      children: [
-                                        Text(laporan.nama, style: TextStyle(color: Colors.white)),
-                                      ],
-                                    ),
                                   ),
-                                  DataCell(Text(laporan.tglOrder, style: TextStyle(color: Colors.white))),
-                                  DataCell(
-                                    Text(
-                                      NumberFormat.currency(
-                                        locale: 'id_ID',
-                                        symbol: 'Rp ',
-                                        decimalDigits: 2,
-                                      ).format(laporan.totalHarga),
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).values.toList(),
-                        ),
-            ),
-            // Button for printing
-            ElevatedButton(
-              onPressed: () {
-                _showMonthDialog();
-              },
-              child: Text('Cetak Laporan'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).values.toList(),
+                      ),
             ),
           ],
         ),
