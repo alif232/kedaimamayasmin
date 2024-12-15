@@ -98,6 +98,35 @@ class _KelolaMenuAdminState extends State<KelolaMenuAdmin> {
     }
   }
 
+  // Fungsi untuk menampilkan konfirmasi sebelum menghapus menu
+  void _showDeleteConfirmationDialog(Menu menu) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Konfirmasi Hapus'),
+          content: Text('Apakah Anda yakin ingin menghapus menu ${menu.nama}?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+              },
+              child: Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                deleteMenu(menu.idMenu); // Panggil fungsi deleteMenu
+                Navigator.of(context).pop(); // Menutup dialog
+              },
+              child: Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Fungsi untuk menghapus menu
   void deleteMenu(int id) async {
     try {
       await _menuController.deleteMenu(id);
@@ -224,7 +253,7 @@ class _KelolaMenuAdminState extends State<KelolaMenuAdmin> {
                                               if (value == 'edit') {
                                                 _navigateToEditMenu(menu);
                                               } else if (value == 'delete') {
-                                                deleteMenu(menu.idMenu);
+                                                _showDeleteConfirmationDialog(menu); // Menampilkan konfirmasi hapus
                                               }
                                             },
                                             itemBuilder: (context) => [

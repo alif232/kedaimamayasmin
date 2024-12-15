@@ -3,7 +3,9 @@ class Menu {
   final String nama;
   final String kategori;
   final int harga;
-  final int stok;
+  int stok;
+  int jumlahPesanan = 0;
+  int jumlah = 0;
   final String? gambar;
   final DateTime createdAt;
   final DateTime updatedAt;

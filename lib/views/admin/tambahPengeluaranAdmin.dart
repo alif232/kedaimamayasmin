@@ -215,10 +215,10 @@ class _TambahPengeluaranState extends State<TambahPengeluaran> {
                                     builder: (context) {
                                       int? localAmount;
                                       return AlertDialog(
-                                        title: Text("Enter Amount"),
+                                        title: Text("Masukkan Jumlah"),
                                         content: TextField(
                                           keyboardType: TextInputType.number,
-                                          decoration: InputDecoration(hintText: 'Enter amount'),
+                                          decoration: InputDecoration(hintText: 'Masukkan Jumlah'),
                                           onChanged: (value) {
                                             localAmount = int.tryParse(value);
                                           },

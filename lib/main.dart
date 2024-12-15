@@ -7,6 +7,7 @@ import 'package:proyek2/views/admin/kelolaMenuAdmin.dart';
 import 'package:proyek2/views/admin/kelolaStokAdmin.dart';
 import 'package:proyek2/views/admin/laporanPenjualanAdmin.dart';
 import 'package:proyek2/views/admin/laporanKeuanganAdmin.dart';
+import 'package:proyek2/views/kasir/dashboardKasir.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         '/admin/kelolaStok': (context) => KelolaStokAdmin(),
         '/admin/laporanPenjualan': (context) => LaporanPenjualanAdmin(),
         '/admin/laporanKeuangan': (context) => LaporanKeuanganAdmin(),
+        '/kasir': (context) => DashboardKasir(),
       }, 
     );
   }

@@ -1,7 +1,7 @@
 class Pecahan {
   final int idPecahan;
   final int pecahan;
-  final int jumlah;
+  int jumlah;
 
   Pecahan({
     required this.idPecahan, 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 11, 2024 at 02:26 PM
+-- Generation Time: Dec 15, 2024 at 07:29 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -34,22 +34,6 @@ CREATE TABLE `laporan_keuangan` (
   `jumlah` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `laporan_keuangan`
---
-
-INSERT INTO `laporan_keuangan` (`id_laporan`, `tanggal`, `deskripsi`, `jumlah`) VALUES
-(1, '2024-12-11 03:26:05', 'Beli Bahan', 5000),
-(9, '2024-12-11 13:36:56', 'a', 1),
-(10, '2024-12-11 13:37:43', 'tes', 1),
-(11, '2024-12-11 13:40:44', 'a', 0),
-(12, '2024-12-11 13:50:18', 'a', 10000),
-(13, '2024-12-11 14:04:38', 'a', 500),
-(14, '2024-12-11 14:07:31', 'ye', 500),
-(15, '2024-12-11 14:08:59', 'a', 1000),
-(16, '2024-12-11 14:09:31', 'tes', 3000),
-(17, '2024-12-11 14:42:02', 'yey', 10000);
-
 -- --------------------------------------------------------
 
 --
@@ -72,9 +56,15 @@ CREATE TABLE `menu` (
 --
 
 INSERT INTO `menu` (`id_menu`, `nama`, `kategori`, `harga`, `stok`, `gambar`, `created_at`, `updated_at`) VALUES
-(21, 'Bakso', 'Makanan', 10000, 3, 'uploads/updated_image_21.png', '2024-12-09 15:05:45', '2024-12-09 15:08:22'),
-(22, 'Basreng', 'Makanan', 5000, 5, 'uploads/pxfuel (1).jpg', '2024-12-09 18:28:38', '2024-12-09 18:28:38'),
-(23, 'Teh', 'Minuman', 5000, 3, 'uploads/pxfuel (3).jpg', '2024-12-09 18:29:18', '2024-12-09 18:29:18');
+(22, 'Basreng', 'Makanan', 5000, 0, 'uploads/updated_image_22.png', '2024-12-09 18:28:38', '2024-12-15 13:26:30'),
+(23, 'Teh', 'Minuman', 5000, 1, 'uploads/pxfuel (3).jpg', '2024-12-09 18:29:18', '2024-12-09 18:29:18'),
+(25, 'Dimsum', 'Makanan', 5000, 0, 'uploads/pxfuel (4).jpg', '2024-12-12 19:10:00', '2024-12-12 19:10:00'),
+(26, 'Mie Rebus', 'Makanan', 5000, 0, 'uploads/pxfuel.jpg', '2024-12-12 19:10:27', '2024-12-12 19:10:27'),
+(27, 'Mie Goreng', 'Makanan', 5000, 0, 'uploads/pxfuel (1).jpg', '2024-12-12 19:10:46', '2024-12-12 19:10:46'),
+(28, 'Pop Ice', 'Minuman', 5000, 0, 'uploads/Wallpaper JKT 48.png', '2024-12-12 19:11:19', '2024-12-12 19:11:19'),
+(29, 'Es Coklat', 'Minuman', 5000, 0, 'uploads/pxfuel (2).jpg', '2024-12-12 19:11:38', '2024-12-12 19:11:38'),
+(30, 'Kopi Panas', 'Minuman', 5000, 0, 'uploads/pxfuel.jpg', '2024-12-12 19:11:55', '2024-12-12 19:11:55'),
+(31, 'Cappucino', 'Minuman', 5000, 0, 'uploads/pxfuel (5).jpg', '2024-12-12 19:12:32', '2024-12-12 19:12:32');
 
 -- --------------------------------------------------------
 
@@ -95,10 +85,10 @@ CREATE TABLE `pecahan` (
 INSERT INTO `pecahan` (`id_pecahan`, `pecahan`, `jumlah`) VALUES
 (3, 100000, 0),
 (4, 50000, 0),
-(5, 20000, 0),
-(6, 10000, 1),
-(7, 5000, 1),
-(8, 2000, 0),
+(5, 20000, 2),
+(6, 10000, 0),
+(7, 5000, 3),
+(8, 2000, 1),
 (9, 1000, 0),
 (10, 500, 0);
 
@@ -115,13 +105,6 @@ CREATE TABLE `pesan` (
   `total_harga` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `pesan`
---
-
-INSERT INTO `pesan` (`id_pesan`, `nama`, `tgl_order`, `total_harga`) VALUES
-(1, 'Alif', '2024-12-10 19:04:14', 10000);
-
 -- --------------------------------------------------------
 
 --
@@ -136,14 +119,6 @@ CREATE TABLE `pesan_detail` (
   `harga` int(11) NOT NULL,
   `total_harga` int(11) GENERATED ALWAYS AS (`jumlah` * `harga`) STORED
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `pesan_detail`
---
-
-INSERT INTO `pesan_detail` (`id_detail`, `id_pesan`, `id_menu`, `jumlah`, `harga`) VALUES
-(1, 1, 22, 1, 5000),
-(2, 1, 23, 1, 5000);
 
 -- --------------------------------------------------------
 
@@ -216,13 +191,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `laporan_keuangan`
 --
 ALTER TABLE `laporan_keuangan`
-  MODIFY `id_laporan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id_laporan` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `menu`
 --
 ALTER TABLE `menu`
-  MODIFY `id_menu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id_menu` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `pecahan`
@@ -234,13 +209,13 @@ ALTER TABLE `pecahan`
 -- AUTO_INCREMENT for table `pesan`
 --
 ALTER TABLE `pesan`
-  MODIFY `id_pesan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_pesan` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `pesan_detail`
 --
 ALTER TABLE `pesan_detail`
-  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
