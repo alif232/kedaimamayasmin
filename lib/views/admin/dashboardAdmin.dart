@@ -126,7 +126,7 @@ class _dashboardAdminState extends State<dashboardAdmin> {
               SizedBox(height: 10),
               Text(
                 title,
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
               SizedBox(height: 5),
               Text(

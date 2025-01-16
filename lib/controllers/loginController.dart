@@ -10,7 +10,7 @@ class LoginController {
     required Function setLoading,
     required Function showErrorDialog,
   }) async {
-    final String apiUrl = 'http://localhost/proyek/login.php';
+    final String apiUrl = 'https://doni.infonering.com/proyek/login.php';
 
     // Set loading state
     setLoading(true);

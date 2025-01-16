@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:proyek2/models/menuModel.dart';
 
 class MenuController {
-  static const String baseUrl = 'http://localhost/proyek/menu.php';
+  static const String baseUrl = 'https://doni.infonering.com/proyek/menu.php';
 
   // Fetch all menus
   Future<List<Menu>> fetchMenus() async {
@@ -49,7 +49,7 @@ class MenuController {
 
   // Update menu 
   Future<void> updateMenu(Menu menu, {Uint8List? imageBytes, String? fileName}) async {
-  final request = http.MultipartRequest('POST', Uri.parse('http://localhost/proyek/updateMenu.php'));
+  final request = http.MultipartRequest('POST', Uri.parse('https://doni.infonering.com/proyek/updateMenu.php'));
 
   // Tambahkan data menu ke form
   request.fields.addAll({
@@ -76,7 +76,7 @@ class MenuController {
 
     // Delete a menu
     Future<void> deleteMenu(int id) async {
-    final response = await http.delete(Uri.parse('http://localhost/proyek/deleteMenu.php?id=$id')); // Tambahkan ID sebagai query string
+    final response = await http.delete(Uri.parse('https://doni.infonering.com/proyek/deleteMenu.php?id=$id')); // Tambahkan ID sebagai query string
     if (response.statusCode != 200) {
       throw Exception('Gagal menghapus menu');
     }

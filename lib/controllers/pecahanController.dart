@@ -4,7 +4,7 @@ import 'package:proyek2/models/pecahanModel.dart'; // Import Pecahan model
 
 class PecahanController {
   // Replace with the correct base URL of your PHP server
-  final String baseUrl = "http://localhost/proyek/pecahan.php"; // Replace with your actual server URL
+  final String baseUrl = "https://doni.infonering.com/proyek/pecahan.php"; // Replace with your actual server URL
 
   // Method to fetch Pecahan data from an API
   Future<List<Pecahan>> fetchPecahan() async {

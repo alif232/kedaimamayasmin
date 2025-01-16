@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:proyek2/models/stokModel.dart';
 
 class StokController {
-  final String baseUrl = 'http://localhost/proyek/stok.php';
+  final String baseUrl = 'https://doni.infonering.com/proyek/stok.php';
 
   // Fungsi untuk mengambil data stok
   Future<List<Stok>> fetchStok() async {

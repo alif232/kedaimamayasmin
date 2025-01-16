@@ -4,7 +4,7 @@ import 'package:proyek2/models/pecahanModel.dart';
 import 'package:proyek2/models/laporanKeuanganModel.dart';
 
 class LaporanKeuanganController {
-  final String baseUrl = "http://localhost/proyek/laporanKeuangan.php"; // Ganti dengan URL API Anda
+  final String baseUrl = "https://doni.infonering.com/proyek/laporanKeuangan.php"; // Ganti dengan URL API Anda
 
   Future<List<Pecahan>> fetchPecahan() async {
     final response = await http.get(Uri.parse("$baseUrl?endpoint=pecahan")); // Tambahkan ?endpoint=pecahan

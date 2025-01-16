@@ -4,14 +4,22 @@ import 'package:intl/intl.dart';
 import 'package:proyek2/models/pecahanModel.dart';
 import 'package:proyek2/controllers/pecahanController.dart';
 import 'package:proyek2/controllers/pesananController.dart';
-import 'package:proyek2/views/kasir/dashboardKasir.dart';  // Import dashboardKasir.dart
+import 'package:proyek2/views/kasir/struk.dart';
 
 class KembalianKasir extends StatefulWidget {
   final double kembalian;
+  final String namaPemesan;
+  final List<Map<String, dynamic>> daftarProduk;
+  final double totalHarga;
+  final double uangDiberikan;
 
   const KembalianKasir({
     Key? key,
     required this.kembalian,
+    required this.namaPemesan,
+    required this.daftarProduk,
+    required this.totalHarga,
+    required this.uangDiberikan,
   }) : super(key: key);
 
   @override
@@ -20,7 +28,6 @@ class KembalianKasir extends StatefulWidget {
 
 class _KembalianKasirState extends State<KembalianKasir> {
   late Future<List<Pecahan>> futurePecahanList;
-  List<Pecahan> kembalianList = [];
   String? errorMessage;
   final PesananController pesananController = PesananController();
 
@@ -38,182 +45,180 @@ class _KembalianKasirState extends State<KembalianKasir> {
   @override
   void initState() {
     super.initState();
-    futurePecahanList = PecahanController().fetchPecahan(); // Use the controller instance here
+    futurePecahanList = PecahanController().fetchPecahan();
   }
 
-  List<Pecahan> _hitungKembalian(double kembalian, List<Pecahan> pecahanList) {
-    List<Pecahan> hasil = [];
-    double sisa = kembalian;
+  Future<Map<int, int>> _hitungKembalian(double kembalian, List<Pecahan> pecahanList) async {
+    Map<int, int> hasilKembalian = {};
+
+    pecahanList.sort((a, b) => b.pecahan.compareTo(a.pecahan)); // Urutkan pecahan dari terbesar ke terkecil
 
     for (var pecahan in pecahanList) {
-      int jumlah = (sisa ~/ pecahan.pecahan).toInt();
-      if (jumlah > 0) {
-        int jumlahTersedia = pecahan.jumlah;
-        int jumlahYangDigunakan = jumlah > jumlahTersedia ? jumlahTersedia : jumlah;
-
-        if (jumlahYangDigunakan > 0) {
-          hasil.add(Pecahan(
-            idPecahan: pecahan.idPecahan,
-            pecahan: pecahan.pecahan,
-            jumlah: jumlahYangDigunakan,
-          ));
-        }
-
-        sisa -= jumlahYangDigunakan * pecahan.pecahan;
-        if (sisa <= 0) break;
+      int jumlahPecahan = (kembalian ~/ pecahan.pecahan).toInt();
+      if (jumlahPecahan > 0 && pecahan.jumlah > 0) {
+        int yangDiberikan = jumlahPecahan <= pecahan.jumlah ? jumlahPecahan : pecahan.jumlah;
+        hasilKembalian[pecahan.pecahan] = yangDiberikan;
+        kembalian -= yangDiberikan * pecahan.pecahan;
       }
+
+      if (kembalian == 0) break;
     }
 
-    if (sisa > 0) {
-      errorMessage = 'Tidak ada uang pecahan yang mencukupi untuk kembalian.';
-    }
-
-    return hasil;
+    return hasilKembalian;
   }
 
   Future<void> _selesaikanPesanan() async {
-    if (kembalianList.isNotEmpty) {
-      bool berhasil = await pesananController.kembalian(pecahanList: kembalianList); // Call kembalian() function
-      if (berhasil) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Pesanan selesai dan pecahan diperbarui.')),
-        );
-        // Navigate back to dashboardKasir and refresh it
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardKasir()),  // Navigate to DashboardKasir
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memperbarui pecahan.')),
-        );
-      }
-    }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StrukPembelian(
+          tanggalPesan: DateFormat('dd-MM-yyyy HH:mm:ss').format(DateTime.now()),
+          namaPemesan: widget.namaPemesan,
+          daftarProduk: widget.daftarProduk,
+          totalHarga: widget.totalHarga,
+          uangDiberikan: widget.uangDiberikan,
+          uangKembali: widget.kembalian,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.kembalian == 0) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text('Kembalian Kasir'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Tidak ada kembalian yang harus diberikan.',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _selesaikanPesanan,
-                child: Text('Pesanan Selesai'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Kembalian Kasir'),
+        backgroundColor: Colors.purple[900],
       ),
-      backgroundColor: Colors.purple[900], // Set background to purple 900
-      body: FutureBuilder<List<Pecahan>>(
-        future: futurePecahanList,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Gagal mengambil data pecahan: ${snapshot.error}',
-                style: TextStyle(color: Colors.red, fontSize: 16),
-              ),
-            );
-          } else if (snapshot.hasData) {
-            List<Pecahan> pecahanList = snapshot.data!;
-            kembalianList = _hitungKembalian(widget.kembalian, pecahanList);
-
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
+      backgroundColor: Colors.purple[900],
+      body: widget.kembalian == 0
+          ? Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Total Kembalian: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(widget.kembalian)}',
+                    'Tidak ada kembalian yang harus diberikan.',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 16),
-                  kembalianList.isEmpty
-                      ? Center(
-                          child: Text(
-                            errorMessage ?? 'Tidak ada uang pecahan untuk memberikan kembalian.',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      : Expanded(
-                          child: GridView.builder(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              childAspectRatio: 3 / 2,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                            ),
-                            itemCount: kembalianList.length,
-                            itemBuilder: (context, index) {
-                              final pecahan = kembalianList[index];
-                              return Card(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      pecahanImages[pecahan.pecahan] ?? '',
-                                      width: 400,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text('${pecahan.jumlah}x', style: TextStyle(fontSize: 16)),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                  SizedBox(height: 16),
-                  Divider(color: Colors.white),
-                  SizedBox(height: 16),
-                 Center(
-                    child: ElevatedButton(
-                      onPressed: _selesaikanPesanan,
-                      child: Text('Pesanan Selesai', style: TextStyle(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Use backgroundColor instead of primary
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                      ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _selesaikanPesanan,
+                    child: Text('Pesanan Selesai', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
                     ),
                   ),
                 ],
               ),
-            );
-          } else {
-            return Center(child: Text('Tidak ada data pecahan.'));
-          }
-        },
-      ),
+            )
+          : FutureBuilder<List<Pecahan>>(
+              future: futurePecahanList,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Gagal mengambil data pecahan: ${snapshot.error}',
+                      style: TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                  );
+                } else if (snapshot.hasData) {
+                  List<Pecahan> pecahanList = snapshot.data!;
+                  return FutureBuilder<Map<int, int>>(
+                    future: _hitungKembalian(widget.kembalian, pecahanList),
+                    builder: (context, kembalianSnapshot) {
+                      if (kembalianSnapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (kembalianSnapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Gagal menghitung kembalian: ${kembalianSnapshot.error}',
+                            style: TextStyle(color: Colors.red, fontSize: 16),
+                          ),
+                        );
+                      } else if (kembalianSnapshot.hasData) {
+                        Map<int, int> hasilKembalian = kembalianSnapshot.data!;
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Total Kembalian: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(widget.kembalian)}',
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                              SizedBox(height: 16),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: hasilKembalian.length,
+                                  itemBuilder: (context, index) {
+                                    int pecahan = hasilKembalian.keys.elementAt(index);
+                                    int jumlah = hasilKembalian[pecahan]!;
+                                    final imagePath = pecahanImages[pecahan] ?? 'assets/default.png';
+                                    return Card(
+                                      margin: EdgeInsets.only(bottom: 12.0),
+                                      color: Colors.white,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Row(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                              child: Image.asset(
+                                                imagePath,
+                                                width: 100,
+                                                height: 50,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            SizedBox(width: 16),
+                                            Expanded(
+                                              child: Text(
+                                                'Pecahan: Rp ${NumberFormat("#,##0", "id_ID").format(pecahan)},00',
+                                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                              ),
+                                            ),
+                                            Text(
+                                              '${jumlah}x',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                              Center(
+                                child: ElevatedButton(
+                                  onPressed: _selesaikanPesanan,
+                                  child: Text('Pesanan Selesai', style: TextStyle(color: Colors.white)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        return Center(child: Text('Tidak ada data kembalian.'));
+                      }
+                    },
+                  );
+                } else {
+                  return Center(child: Text('Tidak ada data pecahan.'));
+                }
+              },
+            ),
     );
   }
 }

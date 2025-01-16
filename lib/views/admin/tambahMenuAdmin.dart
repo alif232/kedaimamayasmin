@@ -1,6 +1,7 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:proyek2/controllers/menuController.dart' as CustomMenuController;
 import 'package:proyek2/models/menuModel.dart';
 
@@ -14,49 +15,57 @@ class _TambahMenuState extends State<TambahMenu> {
   final _namaController = TextEditingController();
   final _hargaController = TextEditingController();
 
-  String? _kategori; // Untuk form select kategori
-  Uint8List? _selectedImage; // Untuk menyimpan data gambar
-  String? _fileName; // Nama file untuk identifikasi
+  String? _kategori;
+  File? _selectedImage;
 
   final CustomMenuController.MenuController _menuController =
       CustomMenuController.MenuController();
 
   // Fungsi untuk memilih gambar
   Future<void> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image, // Hanya mendukung file gambar
-    );
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (result != null && result.files.single.bytes != null) {
+    if (pickedFile != null) {
       setState(() {
-        _selectedImage = result.files.single.bytes;
-        _fileName = result.files.single.name;
+        _selectedImage = File(pickedFile.path);
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tidak ada gambar dipilih')),
+      );
     }
+  }
+
+  Uint8List? _getImageBytes() {
+    return _selectedImage?.readAsBytesSync();
   }
 
   void _simpanMenu() async {
     if (_formKey.currentState!.validate() && _selectedImage != null) {
       final newMenu = Menu(
-        idMenu: 0, // ID akan di-generate oleh server
+        idMenu: 0,
         nama: _namaController.text,
         kategori: _kategori!,
         harga: int.parse(_hargaController.text),
-        stok: 0, // Tidak digunakan karena form stok dihapus
-        gambar: null, // Gambar dikelola terpisah
+        stok: 0,
+        gambar: null,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
       try {
-        await _menuController.addMenuWithImageWeb(newMenu, _selectedImage!, _fileName!);
-        Navigator.pop(context, true); // Berhasil simpan
+        Uint8List? imageBytes = _getImageBytes();
+        if (imageBytes != null) {
+          await _menuController.addMenuWithImageWeb(newMenu, imageBytes, _selectedImage!.path.split('/').last);
+          Navigator.pop(context, true); // Kembali ke halaman sebelumnya
+        }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal menambahkan menu: $e')),
         );
       }
-    } else if (_selectedImage == null) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Pilih gambar terlebih dahulu')),
       );
@@ -69,7 +78,7 @@ class _TambahMenuState extends State<TambahMenu> {
       appBar: AppBar(title: Text('Tambah Menu')),
       body: Container(
         padding: const EdgeInsets.all(16.0),
-        color: Colors.purple[800], // Background warna purple
+        color: Colors.purple[800],
         child: Center(
           child: Card(
             elevation: 8.0,
@@ -154,7 +163,7 @@ class _TambahMenuState extends State<TambahMenu> {
                         _selectedImage == null
                             ? Text('Tidak ada gambar dipilih',
                                 style: TextStyle(color: Colors.grey[600]))
-                            : Image.memory(
+                            : Image.file(
                                 _selectedImage!,
                                 width: 100,
                                 height: 100,
@@ -202,4 +211,3 @@ class _TambahMenuState extends State<TambahMenu> {
     );
   }
 }
-

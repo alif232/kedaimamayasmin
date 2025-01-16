@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:proyek2/models/pecahanModel.dart';
 
 class PesananController {
-  static const String _urlPesan = 'http://localhost/proyek/prosesPesan.php';
-  static const String _urlUpdatePecahan = 'http://localhost/proyek/updatePecahan.php';
-  static const String _urlKembalian = 'http://localhost/proyek/kembalian.php';
+  static const String _urlPesan = 'https://doni.infonering.com/proyek/prosesPesan.php';
+  static const String _urlUpdatePecahan = 'https://doni.infonering.com/proyek/updatePecahan.php';
+  static const String _urlKembalian = 'https://doni.infonering.com/proyek/kembalian.php';
 
   Future<bool> kirimPesanan({
     required String nama,

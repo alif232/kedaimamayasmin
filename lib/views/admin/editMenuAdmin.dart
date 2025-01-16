@@ -1,6 +1,7 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:proyek2/controllers/menuController.dart' as CustomMenuController;
 import 'package:proyek2/models/menuModel.dart';
 
@@ -18,8 +19,8 @@ class _EditMenuState extends State<EditMenu> {
   late TextEditingController _namaController;
   late TextEditingController _hargaController;
 
-  Uint8List? _selectedImage; // Gambar baru yang dipilih
-  String? _selectedCategory; // Kategori yang dipilih
+  File? _selectedImage;
+  String? _selectedCategory;
   final CustomMenuController.MenuController _menuController =
       CustomMenuController.MenuController();
 
@@ -28,45 +29,56 @@ class _EditMenuState extends State<EditMenu> {
     super.initState();
     _namaController = TextEditingController(text: widget.menu.nama);
     _hargaController = TextEditingController(text: widget.menu.harga.toString());
-    _selectedCategory = widget.menu.kategori; // Set default category
+    _selectedCategory = widget.menu.kategori;
   }
 
-  // Fungsi untuk memilih gambar baru
+  // Fungsi untuk memilih gambar menggunakan image_picker
   Future<void> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result != null && result.files.single.bytes != null) {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
       setState(() {
-        _selectedImage = result.files.single.bytes;
+        _selectedImage = File(pickedFile.path);
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tidak ada gambar dipilih')),
+      );
     }
   }
 
-  // Fungsi untuk mengupdate menu
+  Uint8List? _getImageBytes() {
+    return _selectedImage?.readAsBytesSync();
+  }
+
   void _updateMenu() async {
     if (_formKey.currentState!.validate()) {
       final updatedMenu = Menu(
         idMenu: widget.menu.idMenu,
         nama: _namaController.text,
-        kategori: _selectedCategory!, // Kategori yang dipilih
+        kategori: _selectedCategory!,
         harga: int.parse(_hargaController.text),
-        stok: widget.menu.stok, // Menjaga stok yang lama
-        gambar: widget.menu.gambar, // Gambar lama jika tidak diubah
+        stok: widget.menu.stok,
+        gambar: widget.menu.gambar,
         createdAt: widget.menu.createdAt,
         updatedAt: DateTime.now(),
       );
 
       try {
-        // Kirim permintaan update
+        Uint8List? imageBytes = _getImageBytes();
         await _menuController.updateMenu(
           updatedMenu,
-          imageBytes: _selectedImage, // Mengirim gambar baru jika ada
-          fileName: _selectedImage != null ? "updated_image_${updatedMenu.idMenu}.png" : null,
+          imageBytes: imageBytes,
+          fileName: _selectedImage != null
+              ? _selectedImage!.path.split('/').last
+              : null,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Menu berhasil diperbarui')),
         );
-        Navigator.pop(context, true); // Berhasil update
+        Navigator.pop(context, true);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal memperbarui menu: $e')),
@@ -107,7 +119,6 @@ class _EditMenuState extends State<EditMenu> {
                       ),
                     ),
                     const SizedBox(height: 16.0),
-                    // Input Nama
                     TextFormField(
                       controller: _namaController,
                       decoration: InputDecoration(
@@ -122,7 +133,6 @@ class _EditMenuState extends State<EditMenu> {
                           value!.isEmpty ? 'Nama menu harus diisi' : null,
                     ),
                     const SizedBox(height: 16.0),
-                    // Dropdown Kategori
                     DropdownButtonFormField<String>(
                       value: _selectedCategory,
                       onChanged: (String? newValue) {
@@ -149,7 +159,6 @@ class _EditMenuState extends State<EditMenu> {
                           value == null ? 'Kategori harus dipilih' : null,
                     ),
                     const SizedBox(height: 16.0),
-                    // Input Harga
                     TextFormField(
                       controller: _hargaController,
                       decoration: InputDecoration(
@@ -167,36 +176,32 @@ class _EditMenuState extends State<EditMenu> {
                           value!.isEmpty ? 'Harga harus diisi' : null,
                     ),
                     const SizedBox(height: 16.0),
-                    // Menampilkan gambar
                     Row(
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: _selectedImage != null
-                              ? Image.memory(
-                                  _selectedImage!,
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                )
-                              : widget.menu.gambar != null && widget.menu.gambar!.isNotEmpty
-                                  ? FadeInImage.assetNetwork(
-                                      placeholder: 'assets/logo.png',
-                                      image: 'http://localhost/proyek/${widget.menu.gambar!}',
-                                      width: 100,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                      imageErrorBuilder: (context, error, stackTrace) {
-                                        return Image.asset(
-                                          'assets/default_image.png',
-                                          width: 100,
-                                          height: 100,
-                                          fit: BoxFit.cover,
-                                        );
-                                      },
-                                    )
-                                  : Text('Tidak ada gambar'),
-                        ),
+                        _selectedImage != null
+                            ? Image.file(
+                                _selectedImage!,
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              )
+                            : widget.menu.gambar != null && widget.menu.gambar!.isNotEmpty
+                                ? FadeInImage.assetNetwork(
+                                    placeholder: 'assets/logo.png',
+                                    image: 'https://alif.infonering.com/proyek/${widget.menu.gambar!}',
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    imageErrorBuilder: (context, error, stackTrace) {
+                                      return Image.asset(
+                                        'assets/default_image.png',
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      );
+                                    },
+                                  )
+                                : Text('Tidak ada gambar'),
                         Spacer(),
                         ElevatedButton(
                           onPressed: _pickImage,
@@ -205,7 +210,6 @@ class _EditMenuState extends State<EditMenu> {
                       ],
                     ),
                     const SizedBox(height: 20.0),
-                    // Tombol Update
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:intl/intl.dart';
+import 'package:data_table_2/data_table_2.dart';
 import 'package:proyek2/controllers/laporanPenjualanController.dart';
 import 'package:proyek2/models/laporanPenjualanModel.dart';
 
@@ -12,12 +12,12 @@ class LaporanPenjualanAdmin extends StatefulWidget {
 }
 
 class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
-  final LaporanPenjualanController _laporanController =
-      LaporanPenjualanController();
+  final LaporanPenjualanController _laporanController = LaporanPenjualanController();
   List<LaporanPenjualan> _laporanList = [];
   List<LaporanPenjualan> _filteredLaporanList = [];
   bool _isLoading = true;
   String _searchQuery = '';
+  DateTime _selectedDate = DateTime.now(); // Tambahkan variabel ini
 
   @override
   void initState() {
@@ -25,13 +25,16 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
     fetchLaporan();
   }
 
-  // Function to load laporan penjualan data from the server
+  // Fetch laporan berdasarkan tanggal yang dipilih
   void fetchLaporan() async {
     setState(() {
       _isLoading = true;
     });
+
+    String formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
+
     try {
-      final laporanList = await _laporanController.fetchLaporanPenjualan();
+      final laporanList = await _laporanController.fetchLaporanPenjualanByDate(formattedDate);
       setState(() {
         _laporanList = laporanList;
         _applyFilter();
@@ -50,13 +53,28 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
     }
   }
 
-  // Function to filter the laporan list based on search query
+  // Fungsi untuk menampilkan date picker
+  Future<void> selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        fetchLaporan(); // Fetch ulang data setelah memilih tanggal
+      });
+    }
+  }
+
+  // Function to filter laporan based on search query
   void _applyFilter() {
     setState(() {
-      _filteredLaporanList = _laporanList
-          .where((laporan) =>
-              laporan.nama.toLowerCase().contains(_searchQuery.toLowerCase()))
-          .toList();
+      _filteredLaporanList = _laporanList.where((laporan) =>
+          laporan.nama.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
     });
   }
 
@@ -130,29 +148,43 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Search field
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Cari pesanan...',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  prefixIcon: Icon(Icons.search),
+            // Date Picker Button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Tanggal: ${DateFormat('dd MMM yyyy').format(_selectedDate)}',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                    _applyFilter();
-                  });
-                },
-              ),
+                ElevatedButton(
+                  onPressed: () => selectDate(context),
+                  child: Text('Pilih Tanggal'),
+                ),
+              ],
             ),
             SizedBox(height: 16.0),
+
+            // Search field
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Cari pesanan...',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                  _applyFilter();
+                });
+              },
+            ),
+            SizedBox(height: 16.0),
+
             // Table with DataTable2
             Expanded(
               child: _isLoading
@@ -165,26 +197,26 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
                           ),
                         )
                       : DataTable2(
-                        headingRowColor: MaterialStateProperty.all(Colors.purple[400]),
-                        columnSpacing: 16.0,
-                        minWidth: 700,
-                        columns: const [
-                          DataColumn(label: Text('No', style: TextStyle(color: Colors.white))), // Ganti menjadi No
-                          DataColumn(label: Text('Nama', style: TextStyle(color: Colors.white))),
-                          DataColumn(label: Text('Tanggal Order', style: TextStyle(color: Colors.white))),
-                          DataColumn(label: Text('Total Harga', style: TextStyle(color: Colors.white))),
-                        ],
-                        rows: _filteredLaporanList.asMap().map((index, laporan) {
-                          return MapEntry(
-                            index,
-                            DataRow(
-                              color: MaterialStateProperty.all(Colors.purple[800]),
-                              cells: [
-                                DataCell(Text(
-                                  (index + 1).toString(), // Gunakan indeks untuk nomor urut
-                                  style: TextStyle(color: Colors.white),
-                                )),
-                                DataCell(
+                          headingRowColor: MaterialStateProperty.all(Colors.purple[400]),
+                          columnSpacing: 16.0,
+                          minWidth: 700,
+                          columns: const [
+                            DataColumn(label: Text('No', style: TextStyle(color: Colors.white))),
+                            DataColumn(label: Text('Nama', style: TextStyle(color: Colors.white))),
+                            DataColumn(label: Text('Tanggal Order', style: TextStyle(color: Colors.white))),
+                            DataColumn(label: Text('Total Harga', style: TextStyle(color: Colors.white))),
+                          ],
+                          rows: _filteredLaporanList.asMap().map((index, laporan) {
+                            return MapEntry(
+                              index,
+                              DataRow(
+                                color: MaterialStateProperty.all(Colors.purple[800]),
+                                cells: [
+                                  DataCell(Text(
+                                    (index + 1).toString(),
+                                    style: TextStyle(color: Colors.white),
+                                  )),
+                                  DataCell(
                                   Row(
                                     children: [
                                       Text(laporan.nama, style: TextStyle(color: Colors.white)),
@@ -197,7 +229,7 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
                                     ],
                                   ),
                                 ),
-                                DataCell(Text(laporan.tglOrder, style: TextStyle(color: Colors.white))),
+                                  DataCell(Text(laporan.tglOrder, style: TextStyle(color: Colors.white))),
                                 DataCell(
                                   Text(
                                     NumberFormat.currency(

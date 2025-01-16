@@ -22,7 +22,7 @@ class BayarKasir extends StatefulWidget {
 }
 
 class _BayarKasirState extends State<BayarKasir> {
-  final PesananController _pesananController = PesananController(); // Instance controller
+  final PesananController _pesananController = PesananController();
   List<Pecahan> pecahanList = [
     Pecahan(idPecahan: 1, pecahan: 100000, jumlah: 0),
     Pecahan(idPecahan: 2, pecahan: 50000, jumlah: 0),
@@ -57,38 +57,50 @@ class _BayarKasirState extends State<BayarKasir> {
   }
 
   Future<void> _konfirmasiPembayaran() async {
-    List<Map<String, dynamic>> pecahanData = pecahanList
-        .where((pecahan) => pecahan.jumlah > 0) // Kirim hanya pecahan yang ada nilainya
-        .map((pecahan) => {
-              'pecahan': pecahan.pecahan,
-              'jumlah': pecahan.jumlah,
-            })
-        .toList();
+  List<Map<String, dynamic>> pecahanData = pecahanList
+      .where((pecahan) => pecahan.jumlah > 0) // Kirim hanya pecahan yang ada nilainya
+      .map((pecahan) => {
+            'pecahan': pecahan.pecahan,
+            'jumlah': pecahan.jumlah,
+          })
+      .toList();
 
-    try {
-      bool berhasil = await _pesananController.simpanPecahan(
-        namaPembeli: widget.nama,
-        pecahanList: pecahanData,
-      );
+  try {
+    bool berhasil = await _pesananController.simpanPecahan(
+      namaPembeli: widget.nama,
+      pecahanList: pecahanData,
+    );
 
-      if (berhasil) {
-        double jumlahKembalian = totalDibayar - widget.totalHarga;
+    if (berhasil) {
+      double jumlahKembalian = totalDibayar - widget.totalHarga;
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => KembalianKasir(
-              kembalian: jumlahKembalian,
-            ),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => KembalianKasir(
+            kembalian: jumlahKembalian,
+            namaPemesan: widget.nama,
+            daftarProduk: widget.keranjang.map((menu) {
+              return {
+                'namaProduk': menu.nama,
+                'jumlah': menu.jumlahPesanan,
+                'harga': menu.harga,
+                'total': menu.harga * menu.jumlahPesanan,
+              };
+            }).toList(),
+            totalHarga: widget.totalHarga,
+            uangDiberikan: totalDibayar,
           ),
-        );
-      } else {
-        _showErrorSnackBar('Gagal menyimpan pecahan.');
-      }
-    } catch (e) {
-      _showErrorSnackBar('Terjadi kesalahan: $e');
+        ),
+      );
+    } else {
+      _showErrorSnackBar('Gagal menyimpan pecahan.');
     }
+  } catch (e) {
+    _showErrorSnackBar('Terjadi kesalahan: $e');
   }
+}
+
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +111,7 @@ class _BayarKasirState extends State<BayarKasir> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.purple[900], // Set background to purple 900
+      backgroundColor: Colors.purple[900],
       appBar: AppBar(
         title: Text('Pembayaran'),
       ),
@@ -108,7 +120,7 @@ class _BayarKasirState extends State<BayarKasir> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Nama Pembeli and Total Harga inside a Card
+            // Kartu informasi nama pembeli dan total harga
             Card(
               color: Colors.white,
               child: Padding(
@@ -117,13 +129,13 @@ class _BayarKasirState extends State<BayarKasir> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Nama Pembeli: ${widget.nama}', // Display buyer's name
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      'Nama Pembeli: ${widget.nama}',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: 6),
                     Text(
                       'Total Harga: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(widget.totalHarga)}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -131,45 +143,51 @@ class _BayarKasirState extends State<BayarKasir> {
             ),
             SizedBox(height: 16),
 
-            // The payment grid
+            // Daftar pecahan uang
             Expanded(
-              child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 3 / 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
+              child: ListView.builder(
                 itemCount: pecahanList.length,
                 itemBuilder: (context, index) {
                   final pecahan = pecahanList[index];
                   final imagePath =
                       pecahanImages[pecahan.pecahan] ?? 'assets/default.png';
 
-                  return GestureDetector(
-                    onTap: () {
-                      _showInputDialog(context, pecahan);
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  return Card(
+                    margin: EdgeInsets.only(bottom: 12.0),
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
                         children: [
-                          Image.asset(
-                            imagePath,
-                            width: 400,
-                            height: 150,
-                            fit: BoxFit.cover,
+                          // Gambar uang
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.asset(
+                              imagePath,
+                              width: 100,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                          SizedBox(height: 8),
+                          SizedBox(width: 16),
+                          // Informasi jumlah uang
+                          Expanded(
+                            child: Text(
+                              'Pecahan: Rp ${NumberFormat("#,##0", "id_ID").format(pecahan.pecahan)},00',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
                           Text(
                             '${pecahan.jumlah}x',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.edit, color: Colors.blue),
+                            onPressed: () => _showInputDialog(context, pecahan),
                           ),
                         ],
                       ),
@@ -178,25 +196,39 @@ class _BayarKasirState extends State<BayarKasir> {
                 },
               ),
             ),
-            Divider(thickness: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total Dibayar: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(totalDibayar)}',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                ElevatedButton(
-                  onPressed: totalDibayar >= widget.totalHarga
-                      ? _konfirmasiPembayaran // Proses simpan
-                      : null,
-                  child: Text('Konfirmasi Pembayaran', style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+            Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Divider(thickness: 2),
+              Text(
+                'Total Dibayar: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(totalDibayar)}',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(height: 10), // Jarak antara teks dan tombol
+              Align(
+                alignment: Alignment.centerRight, // Letakkan tombol di kanan
+                child: SizedBox(
+                  width: 330, // Lebar tombol lebih kecil
+                  height: 40, // Tinggi tombol lebih kecil
+                  child: ElevatedButton(
+                    onPressed: totalDibayar >= widget.totalHarga
+                        ? _konfirmasiPembayaran
+                        : null,
+                    child: Text(
+                      'Konfirmasi Pembayaran',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
-                ),  
-              ],
-            ),
+                ),
+              ),
+            ],
+          ),
           ],
         ),
       ),

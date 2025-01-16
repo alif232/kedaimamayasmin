@@ -181,50 +181,63 @@ class _DashboardKasirState extends State<DashboardKasir> {
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Tampilan Menu',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                if (_keranjang.isNotEmpty)
-                  Text(
-                    NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2)
-                        .format(_totalHarga),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ElevatedButton(
-                  onPressed: _keranjang.isEmpty
-                      ? null
-                      : () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailPesananKasir(
-                                keranjang: _keranjang,
-                                totalHarga: _totalHarga,
-                              ),
-                            ),
-                          );
-                        },
-                  child: Text('Pesan Sekarang', style: TextStyle(color: Colors.white)),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.blue),
-                  ),
-                ),
-              ],
+  children: [
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Tampilan Menu',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        if (_keranjang.isNotEmpty)
+          Text(
+            NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2)
+                .format(_totalHarga),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
+          ),
+      ],
+    ),
+    const SizedBox(height: 10), // Beri jarak antara harga dan tombol
+    Align(
+      alignment: Alignment.centerRight,
+      child: SizedBox(
+        width: 330, // Lebar tombol lebih kecil
+        height: 40,
+        child: ElevatedButton(
+          onPressed: _keranjang.isEmpty
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailPesananKasir(
+                        keranjang: _keranjang,
+                        totalHarga: _totalHarga,
+                      ),
+                    ),
+                  );
+                },
+          child: Text(
+            'Pesan Sekarang',
+            style: TextStyle(color: Colors.white, fontSize: 14),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+      ),
+    ),
             SizedBox(height: 16),
             TextField(
               decoration: InputDecoration(
@@ -301,7 +314,7 @@ class _DashboardKasirState extends State<DashboardKasir> {
           Expanded(
             child: FutureBuilder<Uint8List?>(
 
-              future: fetchImage('http://localhost/proyek/${menu.gambar}'),
+              future: fetchImage('https://alif.infonering.com/proyek/${menu.gambar}'),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
