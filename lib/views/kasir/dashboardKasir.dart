@@ -153,6 +153,26 @@ class _DashboardKasirState extends State<DashboardKasir> {
     );
   }
 
+  void _navigateToDetailPesanan() async {
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => DetailPesananKasir(
+        keranjang: _keranjang,
+        totalHarga: _totalHarga,
+      ),
+    ),
+  );
+
+  if (result != null) {
+    setState(() {
+      // Perbarui keranjang dan total harga berdasarkan data yang dikembalikan
+      _keranjang = result['keranjang'];
+      _totalHarga = result['totalHarga'];
+    });
+  }
+}
+
   // Function to log out (navigate to the root screen)
   void _logout() {
     Navigator.pushReplacementNamed(context, '/'); // Navigate to the root ("/") screen
@@ -212,30 +232,18 @@ class _DashboardKasirState extends State<DashboardKasir> {
         width: 330, // Lebar tombol lebih kecil
         height: 40,
         child: ElevatedButton(
-          onPressed: _keranjang.isEmpty
-              ? null
-              : () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailPesananKasir(
-                        keranjang: _keranjang,
-                        totalHarga: _totalHarga,
-                      ),
-                    ),
-                  );
-                },
-          child: Text(
-            'Pesan Sekarang',
-            style: TextStyle(color: Colors.white, fontSize: 14),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+        onPressed: _keranjang.isEmpty ? null : _navigateToDetailPesanan,
+        child: Text(
+          'Pesan Sekarang',
+          style: TextStyle(color: Colors.white, fontSize: 14),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
           ),
         ),
+      ),
       ),
     ),
             SizedBox(height: 16),

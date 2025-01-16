@@ -6,9 +6,9 @@ import 'package:proyek2/views/kasir/bayarKasir.dart';
 
 class DetailPesananKasir extends StatefulWidget {
   final List<Menu> keranjang;
-  final double totalHarga;
+  double totalHarga;
 
-  const DetailPesananKasir({
+  DetailPesananKasir({
     Key? key,
     required this.keranjang,
     required this.totalHarga,
@@ -20,7 +20,37 @@ class DetailPesananKasir extends StatefulWidget {
 
 class _DetailPesananKasirState extends State<DetailPesananKasir> {
   final TextEditingController _namaController = TextEditingController();
-  final PesananController _pesananController = PesananController(); // Instance PesananController
+  final PesananController _pesananController = PesananController();
+
+  void _hapusMenu(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Konfirmasi'),
+          content: Text('Apakah Anda yakin ingin menghapus menu ini?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  widget.totalHarga -= widget.keranjang[index].harga * widget.keranjang[index].jumlahPesanan;
+                  widget.keranjang.removeAt(index);
+                });
+                Navigator.pop(context);
+              },
+              child: Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _prosesPesanan() async {
     if (_namaController.text.isEmpty) {
@@ -40,7 +70,6 @@ class _DetailPesananKasirState extends State<DetailPesananKasir> {
     }).toList();
 
     try {
-      // Kirim pesanan ke server
       bool berhasil = await _pesananController.kirimPesanan(
         nama: _namaController.text,
         keranjang: keranjangData,
@@ -52,14 +81,13 @@ class _DetailPesananKasirState extends State<DetailPesananKasir> {
           SnackBar(content: Text('Pesanan berhasil disimpan.')),
         );
 
-        // Navigasi ke halaman BayarKasir
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => BayarKasir(
               keranjang: widget.keranjang,
               totalHarga: widget.totalHarga,
-              nama: _namaController.text, // Kirim nama pembeli ke BayarKasir
+              nama: _namaController.text,
             ),
           ),
         );
@@ -74,88 +102,131 @@ class _DetailPesananKasirState extends State<DetailPesananKasir> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.purple[900], // Set the background color to purple
-      appBar: AppBar(
-        title: Text('Detail Pesanan'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Daftar Pesanan',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            SizedBox(height: 16),
-            
-            // The form for Nama Pembeli inside a Card
-            Card(
-              elevation: 4.0,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  controller: _namaController,
-                  decoration: InputDecoration(
-                    labelText: 'Nama Pembeli',
-                    border: OutlineInputBorder(),
-                    hintText: 'Masukkan nama pembeli',
-                    filled: true,
-                    fillColor: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-
-            // List of items (keranjang) placed above the cards
-            Expanded(
-              child: ListView.builder(
-                itemCount: widget.keranjang.length,
-                itemBuilder: (context, index) {
-                  final menu = widget.keranjang[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ListTile(
-                      title: Text(menu.nama),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Harga: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(menu.harga)}',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          Text('Jumlah: ${menu.jumlahPesanan}', style: TextStyle(color: Colors.black)),
-                        ],
-                      ),
-                      trailing: Text(
-                        '${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(menu.harga * menu.jumlahPesanan)}',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Divider(thickness: 2, color: Colors.white),
-            Row(
+      backgroundColor: Colors.purple[900],
+      body: Column(
+        children: [
+          // Custom AppBar
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total Harga: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(widget.totalHarga)}',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  'Detail Pesanan',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
                 ElevatedButton(
-                  onPressed: _prosesPesanan, // Proses pesanan dan navigasi ke BayarKasir
-                  child: Text('Bayar', style: TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    Navigator.pop(context, {
+                      'keranjang': widget.keranjang,
+                      'totalHarga': widget.totalHarga,
+                    });
+                  },
+                  child: Text(
+                    'Kembali',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue, // Set the background color
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          // Main Body
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Input Nama Pembeli
+                  Card(
+                    elevation: 4.0,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: _namaController,
+                        decoration: InputDecoration(
+                          labelText: 'Nama Pembeli',
+                          border: OutlineInputBorder(),
+                          hintText: 'Masukkan nama pembeli',
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+
+                  // Daftar Pesanan
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: widget.keranjang.length,
+                      itemBuilder: (context, index) {
+                        final menu = widget.keranjang[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ListTile(
+                            title: Text(menu.nama),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Harga: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(menu.harga)}',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                Text('Jumlah: ${menu.jumlahPesanan}', style: TextStyle(color: Colors.black)),
+                              ],
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(menu.harga * menu.jumlahPesanan)}',
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () => _hapusMenu(index),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Divider(thickness: 2, color: Colors.white),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Total Harga: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(widget.totalHarga)}',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      ElevatedButton(
+                        onPressed: _prosesPesanan,
+                        child: Text('Bayar', style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
