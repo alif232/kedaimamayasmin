@@ -118,60 +118,6 @@ class _LaporanKeuanganAdminState extends State<LaporanKeuanganAdmin> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Pecahan',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Expanded(
-                    child: FutureBuilder<List<Pecahan>>(
-                      future: pecahanList,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Text("Error: ${snapshot.error}", style: TextStyle(color: Colors.white));
-                        } else {
-                          return DataTable2(
-                            headingRowColor: MaterialStateProperty.all(Colors.purple[400]),
-                            columnSpacing: 16.0,
-                            minWidth: 400,
-                            columns: const [
-                              DataColumn(label: Text("Pecahan", style: TextStyle(color: Colors.white))),
-                              DataColumn(label: Text("Jumlah", style: TextStyle(color: Colors.white))),
-                            ],
-                            rows: snapshot.data!
-                                .map((pecahan) => DataRow(cells: [
-                                      DataCell(
-                                      Text(
-                                        NumberFormat.currency(
-                                          locale: 'id_ID',
-                                          symbol: 'Rp ',
-                                          decimalDigits: 2,
-                                        ).format(pecahan.pecahan),
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                      DataCell(Text("${pecahan.jumlah}", style: TextStyle(color: Colors.white))),
-                                    ]))
-                                .toList(),
-                          );
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
                     'Laporan Keuangan',
                     style: TextStyle(
                       color: Colors.white, // Change text color to white

@@ -45,7 +45,7 @@ class _TambahPengeluaranState extends State<TambahPengeluaran> {
   void submitPengeluaran() {
     if (selectedPecahans.isEmpty || deskripsiController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please select pecahan and enter a description")),
+        SnackBar(content: Text("Pilih pecahan dan masukkan deskripsi pengeluaran")),
       );
     } else {
       int totalAmount = calculateTotalAmount();
@@ -58,7 +58,7 @@ class _TambahPengeluaranState extends State<TambahPengeluaran> {
         )
         .then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Pengeluaran added successfully")));
+          SnackBar(content: Text("Pengeluaran berhasil ditambah")));
       Navigator.pop(context, true); // Return true to indicate success
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
