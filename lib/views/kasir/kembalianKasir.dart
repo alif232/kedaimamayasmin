@@ -40,6 +40,8 @@ class _KembalianKasirState extends State<KembalianKasir> {
     2000: 'assets/2k.png',
     1000: 'assets/1k.png',
     500: 'assets/500p.png',
+    200: 'assets/200p.jpg', // Tambahan gambar pecahan 200
+    100: 'assets/100p.jpg', // Tambahan gambar pecahan 100
   };
 
   @override

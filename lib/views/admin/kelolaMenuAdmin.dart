@@ -289,7 +289,7 @@ class _KelolaMenuAdminState extends State<KelolaMenuAdmin> {
                                     DataCell(
                                       FutureBuilder<Uint8List?>(
                                         future: fetchImage(
-                                            'https://alif.infonering.com/proyek/${menu.gambar}'),
+                                            'https://doni.infonering.com/proyek/${menu.gambar}'),
                                         builder: (context, snapshot) {
                                           if (snapshot.connectionState ==
                                               ConnectionState.waiting) {

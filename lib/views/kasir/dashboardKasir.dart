@@ -322,7 +322,7 @@ class _DashboardKasirState extends State<DashboardKasir> {
           Expanded(
             child: FutureBuilder<Uint8List?>(
 
-              future: fetchImage('https://alif.infonering.com/proyek/${menu.gambar}'),
+              future: fetchImage('https://doni.infonering.com/proyek/${menu.gambar}'),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(

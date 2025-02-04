@@ -32,6 +32,8 @@ class _BayarKasirState extends State<BayarKasir> {
     Pecahan(idPecahan: 6, pecahan: 2000, jumlah: 0),
     Pecahan(idPecahan: 7, pecahan: 1000, jumlah: 0),
     Pecahan(idPecahan: 8, pecahan: 500, jumlah: 0),
+    Pecahan(idPecahan: 9, pecahan: 200, jumlah: 0), // Tambahan pecahan 200
+    Pecahan(idPecahan: 10, pecahan: 100, jumlah: 0), // Tambahan pecahan 100
   ];
 
   final Map<int, String> pecahanImages = {
@@ -43,6 +45,8 @@ class _BayarKasirState extends State<BayarKasir> {
     2000: 'assets/2k.png',
     1000: 'assets/1k.png',
     500: 'assets/500p.png',
+    200: 'assets/200p.jpg', // Gambar untuk pecahan 200
+    100: 'assets/100p.jpg', // Gambar untuk pecahan 100
   };
 
   double totalDibayar = 0.0;
@@ -57,50 +61,49 @@ class _BayarKasirState extends State<BayarKasir> {
   }
 
   Future<void> _konfirmasiPembayaran() async {
-  List<Map<String, dynamic>> pecahanData = pecahanList
-      .where((pecahan) => pecahan.jumlah > 0) // Kirim hanya pecahan yang ada nilainya
-      .map((pecahan) => {
-            'pecahan': pecahan.pecahan,
-            'jumlah': pecahan.jumlah,
-          })
-      .toList();
+    List<Map<String, dynamic>> pecahanData = pecahanList
+        .where((pecahan) => pecahan.jumlah > 0) // Kirim hanya pecahan yang ada nilainya
+        .map((pecahan) => {
+              'pecahan': pecahan.pecahan,
+              'jumlah': pecahan.jumlah,
+            })
+        .toList();
 
-  try {
-    bool berhasil = await _pesananController.simpanPecahan(
-      namaPembeli: widget.nama,
-      pecahanList: pecahanData,
-    );
-
-    if (berhasil) {
-      double jumlahKembalian = totalDibayar - widget.totalHarga;
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => KembalianKasir(
-            kembalian: jumlahKembalian,
-            namaPemesan: widget.nama,
-            daftarProduk: widget.keranjang.map((menu) {
-              return {
-                'namaProduk': menu.nama,
-                'jumlah': menu.jumlahPesanan,
-                'harga': menu.harga,
-                'total': menu.harga * menu.jumlahPesanan,
-              };
-            }).toList(),
-            totalHarga: widget.totalHarga,
-            uangDiberikan: totalDibayar,
-          ),
-        ),
+    try {
+      bool berhasil = await _pesananController.simpanPecahan(
+        namaPembeli: widget.nama,
+        pecahanList: pecahanData,
       );
-    } else {
-      _showErrorSnackBar('Gagal menyimpan pecahan.');
-    }
-  } catch (e) {
-    _showErrorSnackBar('Terjadi kesalahan: $e');
-  }
-}
 
+      if (berhasil) {
+        double jumlahKembalian = totalDibayar - widget.totalHarga;
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => KembalianKasir(
+              kembalian: jumlahKembalian,
+              namaPemesan: widget.nama,
+              daftarProduk: widget.keranjang.map((menu) {
+                return {
+                  'namaProduk': menu.nama,
+                  'jumlah': menu.jumlahPesanan,
+                  'harga': menu.harga,
+                  'total': menu.harga * menu.jumlahPesanan,
+                };
+              }).toList(),
+              totalHarga: widget.totalHarga,
+              uangDiberikan: totalDibayar,
+            ),
+          ),
+        );
+      } else {
+        _showErrorSnackBar('Gagal menyimpan pecahan.');
+      }
+    } catch (e) {
+      _showErrorSnackBar('Terjadi kesalahan: $e');
+    }
+  }
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -197,38 +200,38 @@ class _BayarKasirState extends State<BayarKasir> {
               ),
             ),
             Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Divider(thickness: 2),
-              Text(
-                'Total Dibayar: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(totalDibayar)}',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              const SizedBox(height: 10), // Jarak antara teks dan tombol
-              Align(
-                alignment: Alignment.centerRight, // Letakkan tombol di kanan
-                child: SizedBox(
-                  width: 330, // Lebar tombol lebih kecil
-                  height: 40, // Tinggi tombol lebih kecil
-                  child: ElevatedButton(
-                    onPressed: totalDibayar >= widget.totalHarga
-                        ? _konfirmasiPembayaran
-                        : null,
-                    child: Text(
-                      'Konfirmasi Pembayaran',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Divider(thickness: 2),
+                Text(
+                  'Total Dibayar: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(totalDibayar)}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: SizedBox(
+                    width: 330,
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: totalDibayar >= widget.totalHarga
+                          ? _konfirmasiPembayaran
+                          : null,
+                      child: Text(
+                        'Konfirmasi Pembayaran',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ],
         ),
       ),

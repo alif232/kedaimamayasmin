@@ -188,7 +188,7 @@ class _EditMenuState extends State<EditMenu> {
                             : widget.menu.gambar != null && widget.menu.gambar!.isNotEmpty
                                 ? FadeInImage.assetNetwork(
                                     placeholder: 'assets/logo.png',
-                                    image: 'https://alif.infonering.com/proyek/${widget.menu.gambar!}',
+                                    image: 'https://doni.infonering.com/proyek/${widget.menu.gambar!}',
                                     width: 100,
                                     height: 100,
                                     fit: BoxFit.cover,

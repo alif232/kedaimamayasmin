@@ -17,7 +17,8 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
   List<LaporanPenjualan> _filteredLaporanList = [];
   bool _isLoading = true;
   String _searchQuery = '';
-  DateTime _selectedDate = DateTime.now(); // Tambahkan variabel ini
+  DateTime _selectedDate = DateTime.now();
+  int _totalPenjualan = 0;
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
       setState(() {
         _laporanList = laporanList;
         _applyFilter();
+        _calculateTotalPenjualan(); // Hitung total penjualan setelah fetch data
         _isLoading = false;
       });
     } catch (e) {
@@ -70,15 +72,23 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
     }
   }
 
-  // Function to filter laporan based on search query
+  // Filter laporan berdasarkan query pencarian
   void _applyFilter() {
     setState(() {
       _filteredLaporanList = _laporanList.where((laporan) =>
           laporan.nama.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+      _calculateTotalPenjualan(); // Hitung total penjualan setelah filter
     });
   }
 
-  // Function to show the order details
+  // Hitung total penjualan
+  void _calculateTotalPenjualan() {
+    setState(() {
+      _totalPenjualan = _filteredLaporanList.fold(0, (sum, laporan) => sum + laporan.totalHarga);
+    });
+  }
+
+  // Tampilkan detail pesanan
   void _showDetailPesanan(int idPesan) async {
     try {
       final detailPesanan =
@@ -185,7 +195,16 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
             ),
             SizedBox(height: 16.0),
 
-            // Table with DataTable2
+            // Total Penjualan Hari Ini
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'Total Penjualan Hari Ini: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(_totalPenjualan)}',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            // Tabel Laporan Penjualan
             Expanded(
               child: _isLoading
                   ? Center(child: CircularProgressIndicator())
@@ -217,34 +236,34 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
                                     style: TextStyle(color: Colors.white),
                                   )),
                                   DataCell(
-                                  Row(
-                                    children: [
-                                      Text(laporan.nama, style: TextStyle(color: Colors.white)),
-                                      IconButton(
-                                        icon: Icon(Icons.info, color: Colors.blue),
-                                        onPressed: () {
-                                          _showDetailPesanan(laporan.idPesan);
-                                        },
-                                      ),
-                                    ],
+                                    Row(
+                                      children: [
+                                        Text(laporan.nama, style: TextStyle(color: Colors.white)),
+                                        IconButton(
+                                          icon: Icon(Icons.info, color: Colors.blue),
+                                          onPressed: () {
+                                            _showDetailPesanan(laporan.idPesan);
+                                          },
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
                                   DataCell(Text(laporan.tglOrder, style: TextStyle(color: Colors.white))),
-                                DataCell(
-                                  Text(
-                                    NumberFormat.currency(
-                                      locale: 'id_ID',
-                                      symbol: 'Rp ',
-                                      decimalDigits: 2,
-                                    ).format(laporan.totalHarga),
-                                    style: TextStyle(color: Colors.white),
+                                  DataCell(
+                                    Text(
+                                      NumberFormat.currency(
+                                        locale: 'id_ID',
+                                        symbol: 'Rp ',
+                                        decimalDigits: 2,
+                                      ).format(laporan.totalHarga),
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).values.toList(),
-                      ),
+                                ],
+                              ),
+                            );
+                          }).values.toList(),
+                        ),
             ),
           ],
         ),

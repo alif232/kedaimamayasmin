@@ -156,6 +156,34 @@ class StrukPembelian extends StatelessWidget {
                 ),
               ],
             ),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Uang Diberikan:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                Text(
+                  '${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(uangDiberikan)}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total Kembalian:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                Text(
+                  '${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(uangKembali)}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ],
+            ),
             SizedBox(height: 16),
             Center(
               child: Column(
