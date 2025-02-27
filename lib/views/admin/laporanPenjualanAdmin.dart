@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:proyek2/controllers/laporanPenjualanController.dart';
 import 'package:proyek2/models/laporanPenjualanModel.dart';
+import 'package:proyek2/views/admin/GrafikPenjualanPage.dart'; 
 
 class LaporanPenjualanAdmin extends StatefulWidget {
   const LaporanPenjualanAdmin({Key? key}) : super(key: key);
@@ -195,14 +196,26 @@ class _LaporanPenjualanAdminState extends State<LaporanPenjualanAdmin> {
             ),
             SizedBox(height: 16.0),
 
-            // Total Penjualan Hari Ini
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Text(
-                'Total Penjualan Hari Ini: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(_totalPenjualan)}',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+            // Tambahkan ikon grafik di samping total penjualan
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total Penjualan Hari Ini: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2).format(_totalPenjualan)}',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: Icon(Icons.bar_chart, color: Colors.white, size: 28),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => GrafikPenjualanPage()),
+                    );
+                  },
+                ),
+              ],
             ),
+
 
             // Tabel Laporan Penjualan
             Expanded(

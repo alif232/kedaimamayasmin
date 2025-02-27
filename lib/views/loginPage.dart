@@ -124,6 +124,16 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
+                // Tambahkan teks "Kedai Mama Yasmin" di atas logo
+                Text(
+                  'Kedai Mama Yasmin',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 10.0), // Jarak antara teks dan logo
                 logo, // Logo at the top
                 SizedBox(height: 20.0),
                 // Teks "Silakan masukkan username dan password"

@@ -202,17 +202,28 @@ class _DashboardKasirState extends State<DashboardKasir> {
         padding: EdgeInsets.all(16.0),
         child: Column(
   children: [
-    Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Tampilan Menu',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+            Text(
+              'Kedai Mama Yasmin',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Tampilan Menu',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
         if (_keranjang.isNotEmpty)
           Text(
             NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 2)
@@ -223,8 +234,6 @@ class _DashboardKasirState extends State<DashboardKasir> {
               color: Colors.white,
             ),
           ),
-      ],
-    ),
     const SizedBox(height: 10), // Beri jarak antara harga dan tombol
     Align(
       alignment: Alignment.centerRight,
